@@ -15,6 +15,14 @@ LABEL = "The Checkbox, c. 2025. A tiny square every citizen ticked to attest the
 
 
 def main():
+    # Gate self-check: the competition accepts 1-200 characters, one line,
+    # UTF-8, no trailing newline. Fail loudly instead of writing an entry
+    # the gate would reject.
+    if not 1 <= len(LABEL) <= 200:
+        raise SystemExit(f"label must be 1-200 characters, got {len(LABEL)}")
+    if "\n" in LABEL or "\r" in LABEL:
+        raise SystemExit("label must be a single line")
+    LABEL.encode("utf-8")
     os.makedirs("/output", mode=0o755, exist_ok=True)
     os.chmod("/output", 0o755)
     path = "/output/entry.txt"
