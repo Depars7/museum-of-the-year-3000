@@ -23,12 +23,19 @@ def main():
     if "\n" in LABEL or "\r" in LABEL:
         raise SystemExit("label must be a single line")
     LABEL.encode("utf-8")
-    os.makedirs("/output", mode=0o755, exist_ok=True)
-    os.chmod("/output", 0o755)
-    path = "/output/entry.txt"
+    # The grader runs as an unprivileged user on a read-only filesystem
+    # with a writable output directory it does not own, so never chmod
+    # the directory itself (PermissionError -> exit 1); only the file
+    # this program creates is chmodded, and only best-effort.
+    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, "entry.txt")
     with open(path, "w", encoding="utf-8", newline="") as f:
         f.write(LABEL)
-    os.chmod(path, 0o644)
+    try:
+        os.chmod(path, 0o644)
+    except OSError:
+        pass
 
 
 if __name__ == "__main__":
